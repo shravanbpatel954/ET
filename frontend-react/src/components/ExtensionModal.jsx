@@ -38,10 +38,11 @@ export default function ExtensionModal({ isOpen, onClose }) {
   const modalContent = (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[99999] overflow-y-auto bg-slate-950/85 backdrop-blur-md"
+        className="fixed inset-0 overflow-y-auto bg-slate-950/85 backdrop-blur-md"
+        style={{ zIndex: 100000 }}
         onClick={onClose}
       >
-        <div className="flex min-h-full items-center justify-center p-4">
+        <div className="flex min-h-full items-start sm:items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 0 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

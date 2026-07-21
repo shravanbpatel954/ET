@@ -105,10 +105,14 @@ export default function ThreatAnalyzer() {
 
       const response = await threatAPI.analyzeContent(formData);
       setResult(response);
+      alert(JSON.stringify(response));
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.detail || 'Analysis failed. Check that the backend, database, and Gemini configuration are running.');
-    } finally {
+      alert(JSON.stringify(err.response?.data || err.message || err));
+  setError(
+    err.response?.data?.detail ||
+    err.response?.data?.message ||
+    err.message ||
+    "Analysis failed."    } finally {
       setLoading(false);
     }
   };

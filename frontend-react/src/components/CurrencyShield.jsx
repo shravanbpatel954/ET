@@ -87,8 +87,7 @@ const refreshStatus = async () => {
   try {
     const data = await threatAPI.getCurrencyStatus();
 
-    alert("SUCCESS:\n" + JSON.stringify(data, null, 2));
-
+    
     setStatus(data);
     setStatusError('');
   } catch (err) {

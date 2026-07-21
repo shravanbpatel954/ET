@@ -5,7 +5,7 @@ import Dashboard from './components/Dashboard';
 import ThreatAnalyzer from './components/ThreatAnalyzer';
 import CurrencyShield from './components/CurrencyShield';
 import AudioShield from './components/AudioShield';
-import KnowledgeGraph from './components/KnowledgeGraph';
+import GeoIntelligence from './components/geospatial';
 import ScamIntelligence from './components/ScamIntelligence';
 import LawEnforcement from './components/LawEnforcement';
 import SystemStatus from './components/SystemStatus';
@@ -18,7 +18,7 @@ const NAV_ITEMS = [
   { path: '/audio', label: 'Audio', icon: AudioLines },
   { path: '/scam-intel', label: 'Scam Intel', icon: BrainCircuit },
   { path: '/law-enforcement', label: 'Law Enforcement', icon: ShieldCheck },
-  { path: '/graph', label: 'Graph', icon: Network },
+  { path: '/graph', label: 'Threat Map', icon: Network },
   { path: '/status', label: 'Status', icon: Server },
 ];
 
@@ -91,7 +91,7 @@ export default function App() {
           <Route path="/analyze" element={<ThreatAnalyzer />} />
           <Route path="/currency" element={<CurrencyShield />} />
           <Route path="/audio" element={<AudioShield />} />
-          <Route path="/graph" element={<KnowledgeGraph />} />
+          <Route path="/graph" element={<GeoIntelligence />} />
           <Route path="/scam-intel" element={<ScamIntelligence />} />
           <Route path="/law-enforcement" element={<LawEnforcement />} />
           <Route path="/status" element={<SystemStatus />} />

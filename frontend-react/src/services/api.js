@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://etbackend-hrf2.onrender.com/api/v1',
+  baseURL: 'http://localhost:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -22,6 +22,14 @@ export const threatAPI = {
   },
   getGraph: async () => {
     const response = await api.get('/analyze/graph');
+    return response.data;
+  },
+  getGeoHotspots: async () => {
+    const response = await api.get('/geo/hotspots');
+    return response.data;
+  },
+  getGeoSummary: async () => {
+    const response = await api.get('/geo/summary');
     return response.data;
   },
   getScamIntel: async () => {

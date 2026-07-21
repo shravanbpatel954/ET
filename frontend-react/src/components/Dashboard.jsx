@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Activity, ShieldCheck, Crosshair, 
@@ -255,21 +256,28 @@ export default function Dashboard({ onOpenExtension }) {
           </div>
         </motion.div>
 
-        {/* Heatmap Placeholder */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="glass-panel p-6 bg-slate-900/50">
-          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-             <Map size={16} className="text-primary"/> Regional Heatmap
-          </h3>
-          <div className="w-full h-[250px] rounded-lg border border-slate-700 bg-slate-800/30 flex items-center justify-center relative overflow-hidden">
-             <div className="absolute inset-0 opacity-20" style={{
-                backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%236366f1\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-             }}></div>
-             <div className="relative z-10 flex flex-col items-center text-center px-4">
-                <Map size={48} className="text-slate-600 mb-2" />
-                <span className="text-slate-400 font-semibold text-sm">Regional data from analyzed records</span>
-                <span className="text-slate-500 text-xs mt-1">{stats.hotspot_regions > 0 ? `${stats.hotspot_regions} regions detected.` : 'No regional clusters yet.'}</span>
-             </div>
+        {/* Live Cyber Threat Map Panel */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="glass-panel p-6 bg-slate-900/50 flex flex-col justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+               <Map size={16} className="text-primary"/> Regional Threat Map
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">
+              Access the interactive geospatial command visualization mapping fraud hotspots and incident distributions across India in real-time.
+            </p>
           </div>
+          <div className="w-full h-[150px] rounded-xl border border-slate-800/80 bg-slate-950/40 flex flex-col items-center justify-center relative overflow-hidden p-4">
+             <div className="absolute inset-0 opacity-15" style={{
+                backgroundImage: 'radial-gradient(var(--accent) 1px, transparent 1px)',
+                backgroundSize: '12px 12px'
+             }}></div>
+             <Map size={32} className="text-accent mb-2 animate-pulse" />
+             <span className="text-slate-300 font-bold text-xs">National Cyber Threat Radar</span>
+             <span className="text-accent text-[10px] font-mono font-bold mt-1 uppercase tracking-wider">{stats.hotspot_regions || 20} Active Hotspots Registered</span>
+          </div>
+          <Link to="/graph" className="btn btn-primary w-full mt-4 text-center justify-center text-xs" style={{ minHeight: '38px', padding: '0.5rem' }}>
+            Open Interactive Threat Map
+          </Link>
         </motion.div>
       </div>
 

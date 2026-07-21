@@ -86,20 +86,10 @@ export default function CurrencyShield() {
 const refreshStatus = async () => {
   try {
     const data = await threatAPI.getCurrencyStatus();
-
-    
     setStatus(data);
     setStatusError('');
   } catch (err) {
-    alert(
-      "ERROR:\n" +
-      JSON.stringify(
-        err.response?.data || err.message || err,
-        null,
-        2
-      )
-    );
-
+    console.error('Currency status error:', err);
     setStatusError(
       err.response?.data?.detail ||
       err.response?.data?.message ||

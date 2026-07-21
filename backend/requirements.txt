@@ -1,0 +1,60 @@
+# =============================================================================
+# SentinelAI Backend Dependencies
+# =============================================================================
+
+# Web Framework
+fastapi>=0.115.0,<1.0.0
+uvicorn[standard]>=0.32.0,<1.0.0
+python-multipart>=0.0.12,<1.0.0
+
+# Configuration & Validation
+pydantic>=2.10.0,<3.0.0
+pydantic-settings>=2.6.0,<3.0.0
+python-dotenv>=1.0.0,<2.0.0
+
+# Database
+sqlalchemy>=2.0.36,<3.0.0
+alembic>=1.14.0,<2.0.0
+psycopg2-binary>=2.9.10,<3.0.0
+asyncpg>=0.30.0,<1.0.0
+beanie>=1.29.0,<3.0.0
+motor>=3.6.0,<4.0.0
+pymongo>=4.9.0,<5.0.0
+dnspython>=2.6.0,<3.0.0
+
+# Document Processing (Threat Intelligence Core)
+pypdf>=5.1.0,<6.0.0
+beautifulsoup4>=4.12.0,<5.0.0
+langdetect>=1.0.9,<2.0.0
+Pillow>=11.0.0,<12.0.0
+pytesseract>=0.3.13,<1.0.0
+numpy>=1.26.0,<3.0.0
+soundfile>=0.12.1,<1.0.0
+librosa>=0.10.2,<1.0.0
+
+# Graph Database
+neo4j>=5.26.0,<6.0.0
+
+# Logging
+loguru>=0.7.3,<1.0.0
+
+# AI / ML (reserved for future modules — not used in foundation)
+# faiss-cpu>=1.9.0
+# sentence-transformers>=3.3.0
+# Currency Shield model runtime for naklinote.keras. Install in a Python version
+# supported by TensorFlow/Keras before using the fake-note model endpoint.
+tensorflow>=2.16.0,<3.0.0; python_version >= "3.10" and python_version < "3.13"
+keras>=3.0.0,<4.0.0; python_version >= "3.10" and python_version < "3.13"
+torch>=2.3.0,<3.0.0; python_version >= "3.10" and python_version < "3.13"
+transformers>=4.40.0,<6.0.0; python_version >= "3.10" and python_version < "3.13"
+safetensors>=0.4.3,<1.0.0; python_version >= "3.10" and python_version < "3.13"
+# HuggingFace Space Integration
+gradio_client>=2.5.0
+
+# Testing
+pytest>=8.3.0,<9.0.0
+pytest-asyncio>=0.24.0,<1.0.0
+httpx>=0.28.0,<1.0.0
+
+# LLM
+google-genai>=0.1.0

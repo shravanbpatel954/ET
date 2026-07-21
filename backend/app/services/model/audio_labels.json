@@ -1,0 +1,5 @@
+{
+  "labels": ["real", "ai_generated"],
+  "binary_sigmoid_positive_label": "ai_generated"
+}
+

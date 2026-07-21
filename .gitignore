@@ -1,0 +1,70 @@
+# =============================================================================
+# SentinelAI Root Gitignore Policy
+# =============================================================================
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+backend/venv/
+backend/.venv/
+
+# Node.js & Frontend Build Outputs
+node_modules/
+frontend-react/node_modules/
+frontend-react/dist/
+frontend-react/dist-ssr/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment Secret Files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+
+# Python Byte-compiled / Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Large ML Weights & Compressed Archives (except packaged extension zip)
+*.keras
+*.bin
+*.safetensors
+*.h5
+*.onnx
+*.pt
+*.pth
+*.zip
+!frontend-react/public/sentinel-ai-extension.zip
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE & Editor Directories
+.idea/
+.vscode/
+*.swp
+*.swo
+*.tmp

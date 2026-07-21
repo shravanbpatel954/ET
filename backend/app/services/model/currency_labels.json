@@ -1,0 +1,5 @@
+{
+  "labels": ["genuine", "counterfeit"],
+  "binary_sigmoid_positive_label": "counterfeit"
+}
+

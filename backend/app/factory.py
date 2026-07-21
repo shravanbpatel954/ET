@@ -59,12 +59,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # Middleware (order matters: first added = outermost)
     app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"] if settings.is_development else [],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-        expose_headers=["X-Request-ID"],
+    CORSMiddleware,
+    allow_origins=[
+        "https://sentinelai-rm0s.onrender.com",
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["X-Request-ID"],
     )
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(RequestIDMiddleware)

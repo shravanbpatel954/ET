@@ -38,17 +38,18 @@ export default function ExtensionModal({ isOpen, onClose }) {
   const modalContent = (
     <AnimatePresence>
       <div
-        className="fixed inset-0 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md"
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999 }}
+        className="fixed inset-0 z-[99999] overflow-y-auto bg-slate-950/85 backdrop-blur-md"
         onClick={onClose}
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 0 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 0 }}
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-3xl my-auto bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden text-slate-100 max-h-[90vh] flex flex-col"
-        >
+        <div className="flex min-h-full items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 0 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-3xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden text-slate-100 flex flex-col"
+            style={{ maxHeight: 'calc(100vh - 2rem)' }}
+          >
           {/* Header */}
           <div className="relative p-5 bg-gradient-to-r from-cyan-900/50 via-blue-900/40 to-purple-900/50 border-b border-slate-800 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3.5">
@@ -76,7 +77,7 @@ export default function ExtensionModal({ isOpen, onClose }) {
           </div>
 
           {/* Body */}
-          <div className="p-6 space-y-6 overflow-y-auto flex-1">
+          <div className="p-5 space-y-4 overflow-y-auto flex-1">
             {/* Impact Value Note */}
             <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-950/40 to-purple-950/40 border border-cyan-500/30">
               <div className="flex items-center gap-2 text-cyan-300 font-bold text-sm mb-1.5">
@@ -99,7 +100,7 @@ export default function ExtensionModal({ isOpen, onClose }) {
                 <img
                   src="/extension-demo.png"
                   alt="SentinelAI Extension running on Amazon.com"
-                  className="w-full h-auto object-contain max-h-[320px]"
+                  className="w-full h-auto object-contain max-h-[160px] sm:max-h-[220px] md:max-h-[270px]"
                 />
               </div>
             </div>
@@ -168,25 +169,23 @@ export default function ExtensionModal({ isOpen, onClose }) {
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-3 shrink-0">
-            <span className="text-xs text-slate-500">FastAPI Backend API: http://localhost:8000</span>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
-              >
-                Dismiss
-              </button>
-              <a
-                href="/sentinel-ai-extension.zip"
-                download="sentinel-ai-extension.zip"
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5"
-              >
-                <Download size={14} /> Download Extension ZIP
-              </a>
-            </div>
+          <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-end gap-3 shrink-0">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+            >
+              Dismiss
+            </button>
+            <a
+              href="/sentinel-ai-extension.zip"
+              download="sentinel-ai-extension.zip"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5"
+            >
+              <Download size={14} /> Download Extension ZIP
+            </a>
           </div>
-        </motion.div>
+         </motion.div>
+        </div>
       </div>
     </AnimatePresence>
   );

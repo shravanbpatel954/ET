@@ -1,83 +1,69 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  AlertTriangle,
-  AudioLines,
-  CheckCircle2,
-  Cpu,
-  FileAudio,
-  Loader2,
-  Mic,
-  RefreshCcw,
-  ShieldCheck,
-  Square,
-  Upload,
-  XCircle
+  AlertTriangle, AudioLines, CheckCircle2, FileAudio,
+  Loader2, Mic, RefreshCcw, ShieldCheck, Square, Upload, XCircle, BookOpen
 } from 'lucide-react';
 import { threatAPI } from '../services/api';
 
+function convertBlobToWav(blob) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(new Blob([reader.result], { type: 'audio/wav' }));
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
+function Metric({ label, value }) {
+  return (
+    <div className="metric-card">
+      <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.3rem' }}>{label}</div>
+      <div style={{ fontWeight: 900, fontSize: '1.25rem', color: '#fff', fontFamily: 'JetBrains Mono, monospace' }}>{value}</div>
+    </div>
+  );
+}
+
 export default function AudioShield() {
-  const [status, setStatus] = useState(null);
+  const [status,      setStatus]      = useState(null);
   const [statusError, setStatusError] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-  const recorderRef = useRef(null);
-  const chunksRef = useRef([]);
-  const timerRef = useRef(null);
+  const [previewUrl,  setPreviewUrl]  = useState('');
+  const [result,      setResult]      = useState(null);
+  const [error,       setError]       = useState('');
+  const [loading,     setLoading]     = useState(false);
+  const [recording,   setRecording]   = useState(false);
+  const [seconds,     setSeconds]     = useState(0);
+  const [activeInputTab, setActiveInputTab] = useState('upload'); // 'upload' or 'record'
 
-  useEffect(() => {
-    refreshStatus();
-    return () => stopTimer();
-  }, []);
+  const recorderRef = useRef(null);
+  const chunksRef   = useRef([]);
+  const timerRef    = useRef(null);
+
+  useEffect(() => { refreshStatus(); return () => stopTimer(); }, []);
 
   const refreshStatus = async () => {
-    try {
-      const data = await threatAPI.getAudioStatus();
-      setStatus(data);
-      setStatusError('');
-    } catch (err) {
-      setStatusError(err.response?.data?.detail || 'Audio model status is unavailable.');
-    }
+    try { const d = await threatAPI.getAudioStatus(); setStatus(d); setStatusError(''); }
+    catch { setStatusError('Voice analysis service check failed.'); }
   };
 
   const isReady = status?.folder_model_present && status?.runtime_available;
 
   const setFileForAnalysis = (file) => {
     if (!file) return;
-    setSelectedFile(file);
-    setResult(null);
-    setError('');
-    setPreviewUrl(URL.createObjectURL(file));
+    setSelectedFile(file); setResult(null); setError(''); setPreviewUrl(URL.createObjectURL(file));
   };
 
   const analyzeFile = async (file = selectedFile) => {
-    if (!isReady) {
-      setError('Audio model runtime is not ready. Install torch, transformers, safetensors, soundfile, and librosa in the backend environment.');
-      return;
-    }
-    if (!file) {
-      setError('Upload or record an audio sample first.');
-      return;
-    }
-    setLoading(true);
-    setError('');
-    setResult(null);
-    const formData = new FormData();
-    formData.append('file', file);
+    if (!isReady) { setError('Voice analysis service is offline. Please try again later.'); return; }
+    if (!file) { setError('Please upload or record an audio sample first.'); return; }
+    setLoading(true); setError(''); setResult(null);
     try {
-      const data = await threatAPI.analyzeAudio(formData);
-      setResult(data);
+      const fd = new FormData(); fd.append('file', file);
+      setResult(await threatAPI.analyzeAudio(fd));
       refreshStatus();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Audio analysis failed.');
-    } finally {
-      setLoading(false);
-    }
+      setError('Audio analysis failed. Check file format and length.');
+    } finally { setLoading(false); }
   };
 
   const startRecording = async () => {
@@ -86,261 +72,274 @@ export default function AudioShield() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       chunksRef.current = [];
       const recorder = new MediaRecorder(stream);
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunksRef.current.push(event.data);
-      };
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       recorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
         const wavBlob = await convertBlobToWav(blob);
-        const file = new File([wavBlob], `audio-scan-${Date.now()}.wav`, { type: 'audio/wav' });
-        stream.getTracks().forEach((track) => track.stop());
-        setFileForAnalysis(file);
+        const f = new File([wavBlob], `voice-scan-${Date.now()}.wav`, { type: 'audio/wav' });
+        stream.getTracks().forEach(t => t.stop());
+        setFileForAnalysis(f);
       };
       recorderRef.current = recorder;
       recorder.start();
-      setRecording(true);
-      setSeconds(0);
-      timerRef.current = setInterval(() => setSeconds((value) => value + 1), 1000);
-    } catch {
-      setError('Microphone permission was blocked or no microphone is available.');
-    }
+      setRecording(true); setSeconds(0);
+      timerRef.current = setInterval(() => setSeconds(v => v + 1), 1000);
+    } catch { setError('Microphone access denied. Please allow microphone permissions.'); }
   };
 
   const stopRecording = () => {
-    if (recorderRef.current && recorderRef.current.state !== 'inactive') {
-      recorderRef.current.stop();
-    }
+    if (recorderRef.current?.state !== 'inactive') recorderRef.current?.stop();
     recorderRef.current = null;
-    setRecording(false);
-    stopTimer();
+    setRecording(false); stopTimer();
   };
 
-  const stopTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
+  const stopTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
 
-  const verdictStyle = result?.verdict === 'ai_generated_suspected'
-    ? 'border-red-500/40 bg-red-950/30 text-red-200'
-    : 'border-emerald-500/40 bg-emerald-950/25 text-emerald-200';
+  const isAI = result?.verdict === 'ai_generated_suspected';
+  const fmt  = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
     <div className="container" style={{ maxWidth: '1400px' }}>
+      {/* ── Hero ─────────────────────────────────────────────── */}
       <div className="page-hero">
-        <div>
-          <div className="eyebrow"><AudioLines size={16} /> Voice authenticity model</div>
-          <h2 className="page-title">Audio Shield</h2>
-          <p className="page-copy">
-            Upload or record audio to detect AI-generated or cloned voice patterns using the local Wav2Vec2 Transformers model.
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="brand-mark" style={{ background: 'linear-gradient(135deg, #0284c7, #4f46e5)' }}>
+            <AudioLines size={22} />
+          </div>
+          <div>
+            <div className="eyebrow"><AudioLines size={12} /> National Public Safety Portal</div>
+            <h1 className="page-title">Voice Clone Authenticity Shield</h1>
+            <p className="page-copy">Detecting AI voice impersonation and audio deepfakes to protect public communication security.</p>
+          </div>
         </div>
-        <button onClick={refreshStatus} className="btn">
-          <RefreshCcw size={18} /> Refresh Model Status
+        <button onClick={refreshStatus} className="btn" style={{ flexShrink: 0 }}>
+          <RefreshCcw size={16} /> Refresh
         </button>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-        <motion.div initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="glass-panel p-5 bg-slate-900/50">
-          <div className="flex items-start justify-between gap-4 mb-5">
-            <div>
-              <h3 className="text-lg font-black text-white flex items-center gap-2"><Cpu size={20} /> Model Runtime</h3>
-              <p className="text-sm text-slate-400 mt-1">Local audio folder and PyTorch stack</p>
-            </div>
-            <span className={`text-xs font-black px-3 py-1 rounded-full ${isReady ? 'bg-emerald-500/15 text-emerald-300' : 'bg-yellow-500/15 text-yellow-300'}`}>
-              {isReady ? 'READY' : 'SETUP NEEDED'}
+      {/* ── Split Layout Grid ──────────────────────────────────── */}
+      <div className="analyzer-layout">
+        
+        {/* ── Left Column: Control Panel (Inputs & Capture) ───────── */}
+        <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
+          
+          {/* Status banner */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '0.6rem',
+            padding: '0.5rem 0.85rem', borderRadius: '10px', marginBottom: '1rem',
+            background: isReady ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)',
+            border: `1px solid ${isReady ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'}`,
+          }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: isReady ? '#34d399' : '#fbbf24', display: 'inline-block', animation: isReady ? 'pulse 2s infinite' : 'none' }} />
+            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: isReady ? '#6ee7b7' : '#fcd34d' }}>
+              {isReady ? 'Voice Pipeline Active' : 'System Setup Incomplete'}
             </span>
           </div>
-          {statusError ? (
-            <div className="text-sm text-red-300 bg-red-950/30 border border-red-500/30 rounded-lg p-3">{statusError}</div>
-          ) : (
-            <div className="space-y-3 text-sm">
-              <StatusRow label="Folder model" value={status?.folder_model_present ? 'audio/' : 'Missing'} ok={status?.folder_model_present} />
-              <StatusRow label="Runtime" value={status?.runtime || 'PyTorch/Transformers missing'} ok={status?.runtime_available} />
-              <StatusRow label="audio.keras" value={status?.keras_file_present ? `${status.keras_file_size_mb} MB copy present` : 'Not present'} ok />
-              <StatusRow label="Labels" value={(status?.labels || ['real', 'ai_generated']).join(' / ')} ok />
-            </div>
-          )}
-          {!isReady && (
-            <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-900/30 p-4 text-sm text-yellow-100">
-              <div className="font-black text-yellow-300 mb-1">Real audio runtime required</div>
-              <div>{status?.last_error || 'Install torch, transformers, safetensors, soundfile, and librosa.'}</div>
-            </div>
-          )}
-        </motion.div>
 
-        <motion.div initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.06 }} className="xl:col-span-2 glass-panel p-5 bg-slate-900/50">
-          <div className="currency-action-grid">
-            <label className="min-h-[300px] rounded-lg border-2 border-dashed border-slate-700 hover:border-primary/70 bg-slate-950/40 flex flex-col items-center justify-center text-center p-6 cursor-pointer transition-colors surface-grid">
-              <Upload size={42} className="text-primary mb-4" />
-              <span className="text-white font-black text-lg">Upload audio</span>
-              <span className="text-slate-400 text-sm mt-2">WAV is best. MP3, OGG, and FLAC may work depending on backend codecs.</span>
-              <input type="file" accept="audio/*" onChange={(event) => setFileForAnalysis(event.target.files?.[0])} className="hidden" />
-            </label>
+          <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.4rem' }}>Select Capture Method</h3>
+          <p style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '1rem' }}>Upload voice recording or record live voice pattern from mic.</p>
 
-            <div className="min-h-[300px] rounded-lg border border-slate-800 bg-slate-950/40 p-6 flex flex-col items-center justify-center text-center surface-grid">
-              <Mic size={46} className={recording ? 'text-red-400 animate-pulse mb-4' : 'text-primary mb-4'} />
-              <span className="text-white font-black text-lg">{recording ? `Recording ${seconds}s` : 'Record live audio'}</span>
-              <span className="text-slate-400 text-sm mt-2 mb-5">Record suspicious voice calls, cloned voice samples, or threatening voice notes.</span>
-              <button onClick={recording ? stopRecording : startRecording} className={recording ? 'btn' : 'btn btn-primary'}>
-                {recording ? <Square size={18} /> : <Mic size={18} />}
-                {recording ? 'Stop Recording' : 'Start Recording'}
-              </button>
-            </div>
+          {/* Toggle buttons for capture method */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1rem' }}>
+            <button
+              onClick={() => { setActiveInputTab('upload'); stopRecording(); }}
+              style={{
+                padding: '0.65rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+                background: activeInputTab === 'upload' ? 'rgba(124,58,237,0.2)' : 'rgba(11,17,32,0.8)',
+                color: activeInputTab === 'upload' ? '#c4b5fd' : '#94a3b8',
+                border: activeInputTab === 'upload' ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.05)',
+                transition: 'all 0.2s',
+              }}
+            >
+              📁 Upload Recording
+            </button>
+            <button
+              onClick={() => { setActiveInputTab('record'); }}
+              style={{
+                padding: '0.65rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+                background: activeInputTab === 'record' ? 'rgba(124,58,237,0.2)' : 'rgba(11,17,32,0.8)',
+                color: activeInputTab === 'record' ? '#c4b5fd' : '#94a3b8',
+                border: activeInputTab === 'record' ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.05)',
+                transition: 'all 0.2s',
+              }}
+            >
+              🎙️ Record Live Voice
+            </button>
           </div>
-        </motion.div>
-      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12 }} className="glass-panel p-5 bg-slate-900/50">
-          <h3 className="text-lg font-black text-white flex items-center gap-2 mb-4"><FileAudio size={20} /> Selected Evidence</h3>
-          <div className="empty-state">
-            {previewUrl ? (
-              <div className="w-full">
-                <FileAudio size={58} className="mx-auto mb-4 text-primary" />
-                <div className="text-white font-black mb-4">{selectedFile?.name}</div>
-                <audio src={previewUrl} controls className="w-full" />
-              </div>
+          {/* Input Area */}
+          <div style={{
+            background: 'rgba(4,7,15,0.5)', borderRadius: '12px',
+            border: '1px solid rgba(148,163,184,0.1)', padding: '0.75rem', marginBottom: '1rem',
+          }}>
+            {activeInputTab === 'upload' ? (
+              <label style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justify: 'center',
+                minHeight: '160px', cursor: 'pointer', padding: '1rem', textAlign: 'center',
+              }}>
+                <Upload size={32} style={{ color: '#06b6d4', marginBottom: '0.5rem' }} />
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem' }}>Select Audio File</span>
+                <span style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.2rem' }}>WAV, MP3, or FLAC formats.</span>
+                <input type="file" accept="audio/*" onChange={e => { if (e.target.files?.[0]) setFileForAnalysis(e.target.files[0]); }} style={{ display: 'none' }} />
+              </label>
             ) : (
-              <div>
-                <FileAudio size={58} className="mx-auto mb-4" />
-                No audio selected
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justify: 'center',
+                minHeight: '160px', textAlign: 'center', padding: '1rem', position: 'relative',
+              }}>
+                {recording && (
+                  <div style={{ position: 'absolute', width: 68, height: 68, borderRadius: '50%', border: '2px solid rgba(244,63,94,0.4)', animation: 'ping 1.5s infinite' }} />
+                )}
+                <div style={{ padding: '0.75rem', borderRadius: '50%', background: recording ? 'rgba(244,63,94,0.2)' : 'rgba(124,58,237,0.15)', marginBottom: '0.5rem', border: `1px solid ${recording ? 'rgba(244,63,94,0.4)' : 'rgba(124,58,237,0.3)'}` }}>
+                  <Mic size={24} style={{ color: recording ? '#f87171' : '#a78bfa' }} />
+                </div>
+                <span style={{ color: '#fff', fontWeight: 800, fontSize: '0.85rem' }}>
+                  {recording ? `Recording... ${fmt(seconds)}` : 'Microphone Ready'}
+                </span>
+                <div style={{ marginTop: '0.75rem' }}>
+                  {!recording ? (
+                    <button onClick={startRecording} style={{ padding: '0.45rem 1.25rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, background: 'linear-gradient(135deg, #7c3aed, #0891b2)', color: '#fff', border: 'none', cursor: 'pointer' }}>
+                      Start Recording
+                    </button>
+                  ) : (
+                    <button onClick={stopRecording} style={{ padding: '0.45rem 1.25rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, background: 'rgba(244,63,94,0.15)', color: '#fca5a5', border: '1px solid rgba(244,63,94,0.4)', cursor: 'pointer' }}>
+                      Stop Recording
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
+
+          {/* Audio Player if sample is loaded */}
+          {previewUrl && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.75rem', borderRadius: '10px', background: 'rgba(4,7,15,0.4)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+                  {selectedFile ? selectedFile.name : 'Live Recording.wav'}
+                </span>
+                <button onClick={() => { setPreviewUrl(''); setSelectedFile(null); setResult(null); }} style={{ fontSize: '0.7rem', color: '#f43f5e', background: 'none', cursor: 'pointer', fontWeight: 700 }}>
+                  Remove
+                </button>
+              </div>
+              <audio controls src={previewUrl} style={{ width: '100%', height: '32px' }} />
+            </div>
+          )}
+
+          {/* Analyze Button */}
           <button
             onClick={() => analyzeFile()}
-            disabled={!selectedFile || loading || !isReady}
-            className="mt-4 w-full py-4 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white font-black flex items-center justify-center gap-2"
+            disabled={!previewUrl || loading || !isReady}
+            style={{
+              width: '100%', padding: '0.9rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 800,
+              border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+              background: (previewUrl && isReady) ? 'linear-gradient(135deg, #7c3aed, #0891b2)' : 'rgba(30,41,59,0.8)',
+              opacity: (!previewUrl || loading || !isReady) ? 0.6 : 1,
+              cursor: (!previewUrl || loading || !isReady) ? 'not-allowed' : 'pointer',
+              boxShadow: (previewUrl && isReady) ? '0 4px 16px rgba(124,58,237,0.25)' : 'none',
+              transition: 'all 0.2s',
+            }}
           >
-            {loading ? <Loader2 size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
-            {loading ? 'Analyzing audio...' : isReady ? 'Analyze Audio' : 'Model Runtime Needed'}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+            {loading ? 'Analyzing voice prints...' : isReady ? 'Analyze Voice Sample' : 'Service Unavailable'}
           </button>
+
           {error && (
-            <div className="mt-4 p-4 rounded-lg border border-red-500/30 bg-red-950/30 text-red-200 text-sm flex gap-3">
-              <AlertTriangle size={20} className="shrink-0" /> {error}
+            <div style={{ marginTop: '0.75rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: '#fca5a5', fontSize: '0.78rem', display: 'flex', gap: '0.4rem', alignItems: 'flex-start' }}>
+              <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: 2 }} /> {error}
             </div>
           )}
-        </motion.div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.18 }} className="glass-panel p-5 bg-slate-900/50">
-          <h3 className="text-lg font-black text-white flex items-center gap-2 mb-4"><ShieldCheck size={20} /> Audio Verdict</h3>
-          {!result ? (
-            <div className="empty-state">
-              <div>
-                <AudioLines size={58} className="mx-auto mb-4" />
-                Real prediction output will appear after upload or recording.
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-5">
-              <div className={`rounded-lg border p-5 ${verdictStyle}`}>
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-xs font-black uppercase tracking-[0.25em] opacity-80">Verdict</div>
-                    <div className="text-2xl font-black mt-1">
-                      {result.verdict === 'ai_generated_suspected' ? 'AI-generated voice suspected' : 'Likely real voice'}
+        </div>
+
+        {/* ── Right Column: Verdict & Citizen Safety Guidelines ────── */}
+        <div className="glass-panel" style={{ padding: '1.25rem' }}>
+          
+          <AnimatePresence mode="wait">
+            {!result ? (
+              <motion.div
+                key="awaiting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justify: 'center', minHeight: '340px', textAlign: 'center', padding: '2rem' }}
+              >
+                <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', items: 'center', justify: 'center', margin: '0 auto 1.25rem', animation: 'pulse 2s infinite' }}>
+                  <AudioLines size={32} style={{ color: '#818cf8', opacity: 0.7 }} />
+                </div>
+                <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '1.15rem', marginBottom: '0.4rem' }}>Awaiting Audio Sample</h3>
+                <p style={{ color: '#64748b', fontSize: '0.82rem', maxWidth: '20rem', lineHeight: 1.6 }}>
+                  Upload a voice call recording or record audio patterns using your microphone to inspect spectral cloning indicators.
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+              >
+                {/* Verdict Banner */}
+                <div style={{
+                  padding: '1.25rem', borderRadius: '14px', textAlign: 'center',
+                  background: isAI ? 'linear-gradient(135deg, rgba(127,29,29,0.85), rgba(69,10,10,0.95))' : 'linear-gradient(135deg, rgba(20,83,45,0.85), rgba(5,46,22,0.95))',
+                  border: `2px solid ${isAI ? 'rgba(244,63,94,0.45)' : 'rgba(16,185,129,0.45)'}`,
+                  boxShadow: isAI ? '0 8px 24px rgba(244,63,94,0.15)' : '0 8px 24px rgba(16,185,129,0.15)',
+                }}>
+                  {isAI
+                    ? <XCircle size={44} style={{ color: '#f87171', margin: '0 auto 0.5rem' }} />
+                    : <CheckCircle2 size={44} style={{ color: '#34d399', margin: '0 auto 0.5rem' }} />}
+                  <div style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#cbd5e1', marginBottom: '0.2rem' }}>Safety Verdict</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 950, color: '#fff', letterSpacing: '-0.02em' }}>
+                    {isAI ? 'AI Cloned / Deepfake Voice' : 'Authentic Voice Sample'}
+                  </div>
+                </div>
+
+                {/* Score Panel */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+                  <Metric label="AI Match Confidence" value={`${result.confidence != null ? Math.round(result.confidence * 100) : '—'}%`} />
+                  <Metric label="Authenticity Likelihood" value={`${result.confidence != null ? Math.round((1 - result.confidence) * 100) : '—'}%`} />
+                </div>
+
+                {/* Probability Distribution */}
+                {result.probabilities && Object.keys(result.probabilities).length > 0 && (
+                  <div style={{ padding: '0.85rem', borderRadius: '12px', background: 'rgba(11,17,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <h4 style={{ color: '#fff', fontWeight: 700, fontSize: '0.8rem', marginBottom: '0.6rem' }}>Spectral Signatures</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {Object.entries(result.probabilities).map(([lbl, val]) => (
+                        <div key={lbl}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.2rem' }}>
+                            <span style={{ color: '#94a3b8', textTransform: 'capitalize' }}>{lbl.replace(/_/g, ' ')}</span>
+                            <span style={{ color: '#f1f5f9', fontWeight: 700 }}>{Math.round(val * 100)}%</span>
+                          </div>
+                          <div style={{ height: 5, borderRadius: '999px', background: 'rgba(255,255,255,0.04)', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', borderRadius: '999px', background: 'linear-gradient(90deg, #7c3aed, #06b6d4)', width: `${Math.round(val * 100)}%` }} />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  {result.verdict === 'ai_generated_suspected' ? <XCircle size={44} /> : <CheckCircle2 size={44} />}
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
-                  <Metric label="Synthetic" value={`${Math.round(result.synthetic_probability * 100)}%`} />
-                  <Metric label="Confidence" value={`${Math.round(result.confidence * 100)}%`} />
-                  <Metric label="Severity" value={result.severity} />
-                </div>
-              </div>
+                )}
 
-              <ResultList title="Class probabilities" items={Object.entries(result.probabilities || {}).map(([label, value]) => `${label}: ${Math.round(value * 100)}%`)} />
-              <ResultList title="Acoustic warning signals" items={result.threatening_audio?.signals?.length ? result.threatening_audio.signals : ['No high-intensity acoustic warnings detected.']} />
-              <ResultList title="What to do next" items={result.recommendations || []} numbered />
+                {/* Safety Guidelines */}
+                {result.recommendations?.length > 0 && (
+                  <div style={{ padding: '0.85rem', borderRadius: '12px', background: 'rgba(11,17,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <h4 style={{ color: '#fff', fontWeight: 700, fontSize: '0.8rem', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <BookOpen size={14} style={{ color: '#06b6d4' }} /> Citizen Safety Advisory
+                    </h4>
+                    <ol style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {result.recommendations.map((item, i) => (
+                        <li key={i} style={{ display: 'flex', gap: '0.5rem', fontSize: '0.78rem', color: '#cbd5e1', lineHeight: 1.45 }}>
+                          <span style={{ color: '#7c3aed', fontWeight: 900, flexShrink: 0 }}>{i + 1}.</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
 
-              <div className="text-xs text-slate-500 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <span>Duration: {result.audio?.duration_seconds}s</span>
-                <span>Rate: {result.audio?.sampling_rate} Hz</span>
-                <span>Runtime: {result.technical?.runtime || 'unknown'}</span>
-                <span>Mode: {result.analysis_mode}</span>
-              </div>
-            </div>
-          )}
-        </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+        </div>
+
       </div>
-    </div>
-  );
-}
-
-async function convertBlobToWav(blob) {
-  const audioContext = new AudioContext();
-  const arrayBuffer = await blob.arrayBuffer();
-  const decoded = await audioContext.decodeAudioData(arrayBuffer);
-  const channelData = decoded.getChannelData(0);
-  const wavBuffer = encodeWav(channelData, decoded.sampleRate);
-  await audioContext.close();
-  return new Blob([wavBuffer], { type: 'audio/wav' });
-}
-
-function encodeWav(samples, sampleRate) {
-  const buffer = new ArrayBuffer(44 + samples.length * 2);
-  const view = new DataView(buffer);
-  writeString(view, 0, 'RIFF');
-  view.setUint32(4, 36 + samples.length * 2, true);
-  writeString(view, 8, 'WAVE');
-  writeString(view, 12, 'fmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  writeString(view, 36, 'data');
-  view.setUint32(40, samples.length * 2, true);
-  let offset = 44;
-  for (let i = 0; i < samples.length; i += 1) {
-    const sample = Math.max(-1, Math.min(1, samples[i]));
-    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
-    offset += 2;
-  }
-  return buffer;
-}
-
-function writeString(view, offset, text) {
-  for (let i = 0; i < text.length; i += 1) {
-    view.setUint8(offset + i, text.charCodeAt(i));
-  }
-}
-
-function StatusRow({ label, value, ok }) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-slate-950/40 border border-slate-800 px-3 py-2">
-      <span className="text-slate-400">{label}</span>
-      <span className={`font-bold text-right ${ok ? 'text-slate-100' : 'text-yellow-300'}`}>{value}</span>
-    </div>
-  );
-}
-
-function Metric({ label, value }) {
-  return (
-    <div className="rounded-lg bg-black/20 border border-white/10 p-3">
-      <div className="text-xs opacity-70">{label}</div>
-      <div className="font-black text-lg">{value}</div>
-    </div>
-  );
-}
-
-function ResultList({ title, items, numbered = false }) {
-  return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-4">
-      <h4 className="text-white font-black mb-3">{title}</h4>
-      <ol className="space-y-2 text-sm text-slate-300">
-        {items.map((item, index) => (
-          <li key={`${title}-${item}`} className="flex gap-3">
-            <span className="text-primary font-black">{numbered ? index + 1 : '•'}</span>
-            <span>{item}</span>
-          </li>
-        ))}
-      </ol>
     </div>
   );
 }

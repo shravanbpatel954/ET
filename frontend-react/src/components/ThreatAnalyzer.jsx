@@ -106,14 +106,17 @@ export default function ThreatAnalyzer() {
       const response = await threatAPI.analyzeContent(formData);
       setResult(response);
       alert(JSON.stringify(response));
-    } catch (err) {
-      alert(JSON.stringify(err.response?.data || err.message || err));
+   } catch (err) {
+  alert(JSON.stringify(err.response?.data || err.message || err));
+
   setError(
     err.response?.data?.detail ||
     err.response?.data?.message ||
     err.message ||
-    "Analysis failed."    } finally {
-      setLoading(false);
+    "Analysis failed."
+  );
+} finally {
+  setLoading(false);
     }
   };
 

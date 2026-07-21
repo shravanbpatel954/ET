@@ -83,16 +83,31 @@ export default function CurrencyShield() {
     setIsAutoScanningFrame(false);
   };
 
-  const refreshStatus = async () => {
-    try {
-      const data = await threatAPI.getCurrencyStatus();
-      setStatus(data);
-      setStatusError('');
-    } catch (err) {
-      setStatusError(err.response?.data?.detail || 'Currency model status is unavailable.');
-    }
-  };
+const refreshStatus = async () => {
+  try {
+    const data = await threatAPI.getCurrencyStatus();
 
+    alert("SUCCESS:\n" + JSON.stringify(data, null, 2));
+
+    setStatus(data);
+    setStatusError('');
+  } catch (err) {
+    alert(
+      "ERROR:\n" +
+      JSON.stringify(
+        err.response?.data || err.message || err,
+        null,
+        2
+      )
+    );
+
+    setStatusError(
+      err.response?.data?.detail ||
+      err.response?.data?.message ||
+      'Currency model status is unavailable.'
+    );
+  }
+};
   const setFileForAnalysis = (file) => {
     if (!file) return;
     setSelectedFile(file);

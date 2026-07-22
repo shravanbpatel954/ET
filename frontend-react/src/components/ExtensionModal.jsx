@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Download, FolderOpen, CheckCircle, ExternalLink, Puzzle, Layers, Sparkles, X, Copy, Eye } from 'lucide-react';
+import { Shield, Download, FolderOpen, CheckCircle, ExternalLink, Puzzle, Layers, Sparkles, X, Copy, Eye,ChevronDown } from 'lucide-react';
 
 export default function ExtensionModal({ isOpen, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -103,6 +103,9 @@ export default function ExtensionModal({ isOpen, onClose }) {
                   alt="SentinelAI Extension running on Amazon.com"
                   className="w-full h-auto object-contain max-h-[160px] sm:max-h-[220px] md:max-h-[270px]"
                 />
+              </div>
+               <div className="flex justify-center items-center gap-2 mt-2 pt-2 border-t border-slate-800 text-cyan-400 text-xs font-semibold animate-pulse">
+                <ChevronDown size={14} /> Scroll down for quick installation steps <ChevronDown size={14} />
               </div>
             </div>
 

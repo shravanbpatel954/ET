@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Activity, ShieldCheck, Crosshair,
   Network, TrendingUp, Globe, IndianRupee, AudioLines,
-  Puzzle, Download, Sparkles, ArrowRight, Zap, Eye
+  Puzzle, Download, Sparkles, ArrowRight, Zap, Eye, Server, ServerOff, Loader2
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { threatAPI } from '../services/api';
@@ -24,12 +24,14 @@ export default function Dashboard({ onOpenExtension }) {
   });
   const [currencyReady, setCurrencyReady] = useState(null);
   const [audioReady,    setAudioReady]    = useState(null);
-
+  const [connectionStatus, setConnectionStatus] = useState('connecting');
   useEffect(() => {
     const fetchStats = async () => {
-      try { const d = await threatAPI.getStats(); setStats(d); } catch {}
-      try { const c = await threatAPI.getCurrencyStatus(); setCurrencyReady(c?.model_present && c?.runtime_available); } catch { setCurrencyReady(false); }
-      try { const a = await threatAPI.getAudioStatus();    setAudioReady(a?.folder_model_present && a?.runtime_available); } catch { setAudioReady(false); }
+     let isConnected = false;
+      try { const d = await threatAPI.getStats(); setStats(d); isConnected = true; } catch {}
+      try { const c = await threatAPI.getCurrencyStatus(); setCurrencyReady(c?.model_present && c?.runtime_available); isConnected = true; } catch { setCurrencyReady(false); }
+      try { const a = await threatAPI.getAudioStatus();    setAudioReady(a?.folder_model_present && a?.runtime_available); isConnected = true; } catch { setAudioReady(false); }
+      setConnectionStatus(isConnected ? 'connected' : 'disconnected');
     };
     fetchStats();
     const iv = setInterval(fetchStats, 6000);
@@ -67,13 +69,45 @@ export default function Dashboard({ onOpenExtension }) {
       <div className="page-hero">
         <div>
           <div className="eyebrow">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" style={{ display: 'inline-block' }} />
-            National Threat Matrix • Live
+            <span className={`w-1.5 h-1.5 rounded-full ${connectionStatus === 'connected' ? 'bg-green-400' : 'bg-red-400'} animate-pulse`} style={{ display: 'inline-block' }} />
+            National Threat Matrix • {connectionStatus === 'connected' ? 'Live' : 'Connecting...'}
           </div>
           <h1 className="page-title">AI-Powered Digital Safety Platform</h1>
           <p className="page-copy">Real-time scam detection, currency verification, and voice authentication — all in one platform.</p>
         </div>
       </div>
+
+            {/* ── Connection Banner ──────────────────────────────────── */}
+      {connectionStatus !== 'connected' && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            marginBottom: '1.5rem',
+            padding: '1rem 1.5rem',
+            borderRadius: '14px',
+            background: connectionStatus === 'connecting' ? 'rgba(245,158,11,0.1)' : 'rgba(244,63,94,0.1)',
+            border: `1px solid ${connectionStatus === 'connecting' ? 'rgba(245,158,11,0.3)' : 'rgba(244,63,94,0.3)'}`,
+            display: 'flex', alignItems: 'center', gap: '1rem',
+          }}
+        >
+          {connectionStatus === 'connecting' ? (
+            <Loader2 className="animate-spin" size={24} color="#fcd34d" />
+          ) : (
+            <ServerOff size={24} color="#fda4af" />
+          )}
+          <div>
+            <h3 style={{ color: connectionStatus === 'connecting' ? '#fcd34d' : '#fda4af', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.1rem' }}>
+              {connectionStatus === 'connecting' ? 'Connecting to Backend Server...' : 'Backend Server Unreachable'}
+            </h3>
+            <p style={{ color: connectionStatus === 'connecting' ? 'rgba(252,211,77,0.8)' : 'rgba(253,164,175,0.8)', fontSize: '0.8rem' }}>
+              {connectionStatus === 'connecting' 
+                ? 'Please wait while we establish a connection.' 
+                : 'Retrying connection. Please ensure the backend server is running.'}
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Extension Banner ─────────────────────────────────────── */}
       <motion.div

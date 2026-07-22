@@ -1,5 +1,5 @@
 # SentinelAI — Adaptive Fraud Intelligence & Digital Public Safety Platform
-
+**🌐:** https://sentinelai-rm0s.onrender.com
 > **Economic Times AI Hackathon 2026 — Project Blueprint & Execution Flow**
 > An AI-powered Digital Public Safety Platform designed to proactively detect, analyze, predict, and prevent digital fraud before citizens become victims.
 

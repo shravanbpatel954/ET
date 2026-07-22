@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Shield, Radio, Clock, AlertCircle } from 'lucide-react';
+import { Shield, Radio, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import { SummaryCards } from './SummaryCards';
 import { FilterBar } from './FilterBar';
 import { MapView } from './MapView';
@@ -125,6 +125,24 @@ export const GeoIntelligence = () => {
         onSearchChange={setSearchQuery}
         onReset={handleResetFilters}
       />
+
+      {/* Loading state alert */}
+      {loading && !error && (
+        <div style={{
+          background: 'rgba(245, 158, 11, 0.1)',
+          border: '1px solid rgba(245, 158, 11, 0.3)',
+          color: '#fcd34d',
+          padding: '1rem',
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          fontSize: '0.9rem',
+        }}>
+          <RefreshCw size={18} className="animate-spin" />
+          <span>Connecting to backend server, fetching national cybercrime data...</span>
+        </div>
+      )}
 
       {/* Error state alert */}
       {error && (

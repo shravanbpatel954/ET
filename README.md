@@ -41,7 +41,7 @@ graph TD
     subgraph Intelligence["Threat Intelligence Core"]
         G & H & I & J -->|Normalized Content| K[Threat Document Model]
         K -->|Run Pipeline| L[Threat Intelligence Service]
-        L -->|Prompt + JSON Schema| M[Google Gemini LLM]
+        L -->|Prompt + JSON Schema| M[ LLM]
         M -->|Raw Extract| N[JSON Repair & Schema Validator]
         N -->|Structured Entities & Tactics| O[Threat Intelligence Model]
     end

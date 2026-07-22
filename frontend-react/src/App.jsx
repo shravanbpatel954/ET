@@ -16,9 +16,9 @@ const NAV_ITEMS = [
   { path: '/analyze',        label: 'Analyzer',       icon: ShieldAlert },
   { path: '/currency',       label: 'Currency',       icon: IndianRupee },
   { path: '/audio',          label: 'Audio',          icon: AudioLines },
+  { path: '/graph',          label: 'National Cybercrime Map', icon: Network },
   { path: '/scam-intel',     label: 'Scam Intel',     icon: BrainCircuit },
   { path: '/law-enforcement',label: 'Law Enforcement',icon: ShieldCheck },
-  { path: '/graph',          label: 'Threat Map',     icon: Network },
   { path: '/status',         label: 'Status',         icon: Server },
 ];
 

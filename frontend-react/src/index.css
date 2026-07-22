@@ -73,7 +73,7 @@ h1, h2, h3, h4, p { margin: 0; }
 /* ─── Scrollbar ──────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 7px; height: 7px; }
 ::-webkit-scrollbar-track { background: var(--bg-2); }
-::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 8px; }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 8px;background: #CBD5E1; }
 ::-webkit-scrollbar-thumb:hover { background: #E2E8F0; }
 
 /* ─── App Shell ──────────────────────────────────────────────── */

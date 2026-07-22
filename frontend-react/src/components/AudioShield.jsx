@@ -132,7 +132,7 @@ export default function AudioShield() {
           }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: isReady ? '#34d399' : '#fbbf24', display: 'inline-block', animation: isReady ? 'pulse 2s infinite' : 'none' }} />
             <span style={{ fontSize: '0.78rem', fontWeight: 700, color: isReady ? '#6ee7b7' : '#fcd34d' }}>
-              {isReady ? 'Voice Pipeline Active' : 'System Setup Incomplete'}
+              {isReady ? 'Voice Pipeline Active' : 'Connecting to backend server'}
             </span>
           </div>
 

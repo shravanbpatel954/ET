@@ -43,7 +43,7 @@ export default function Dashboard({ onOpenExtension }) {
     { icon: Crosshair,   color: '#f43f5e', bg: 'rgba(244,63,94,0.12)',   label: 'Threats Analyzed',    value: stats.total_documents, badge: '+Live',     badgeColor: '#4ade80' },
     { icon: ShieldCheck, color: '#06b6d4', bg: 'rgba(6,182,212,0.12)',   label: 'Attacks Prevented',   value: stats.attacks_prevented, badge: '+8%',    badgeColor: '#4ade80' },
     { icon: Activity,    color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  label: 'Scam Variants Active', value: stats.total_variants,  badge: 'Live',    badgeColor: '#f59e0b' },
-    { icon: Globe,       color: '#7c3aed', bg: 'rgba(124,58,237,0.12)', label: 'Hotspot Regions',     value: stats.hotspot_regions, badge: null,       badgeColor: null },
+    
     {
       icon: IndianRupee, color: '#10b981', bg: 'rgba(16,185,129,0.12)',
       label: 'Currency Shield', value: null,

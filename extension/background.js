@@ -1,5 +1,5 @@
 // SentinelAI Extension Background Service Worker (Manifest V3)
-const API_BASE = "http://localhost:8000/api/v1";
+const API_BASE = "https://etbackend-hrf2.onrender.com/api/v1";
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("SentinelAI Threat Shield Extension Installed.");

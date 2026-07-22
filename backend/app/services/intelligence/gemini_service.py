@@ -22,7 +22,7 @@ class GeminiService:
         
         # We pass the loaded API key from settings directly
         self.client = genai.Client(api_key=settings.gemini_api_key)
-        self.model_name = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
         
         self.max_retries = 3
         self.base_delay = 2.0  # seconds

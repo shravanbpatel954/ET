@@ -3,7 +3,7 @@
 > **Economic Times AI Hackathon 2026 — Project Blueprint & Execution Flow**
 > An AI-powered Digital Public Safety Platform designed to proactively detect, analyze, predict, and prevent digital fraud before citizens become victims.
 
----
+--- -
 
 ## 🌟 Vision & Platform Overview
 

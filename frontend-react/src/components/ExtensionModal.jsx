@@ -105,7 +105,7 @@ export default function ExtensionModal({ isOpen, onClose }) {
                 />
               </div>
                <div className="flex justify-center items-center gap-2 mt-2 pt-2 border-t border-slate-800 text-cyan-400 text-xs font-semibold animate-pulse">
-                <ChevronDown size={14} /> Scroll down for quick installation steps <ChevronDown size={14} />
+                <ChevronDown size={16} /> Scroll down for quick installation steps <ChevronDown size={16} />
               </div>
             </div>
 

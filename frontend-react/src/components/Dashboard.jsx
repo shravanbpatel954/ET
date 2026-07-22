@@ -144,7 +144,7 @@ export default function Dashboard({ onOpenExtension }) {
                 borderRadius: '999px', background: 'rgba(124,58,237,0.25)',
                 color: '#c4b5fd', border: '1px solid rgba(124,58,237,0.4)',
                 textTransform: 'uppercase', letterSpacing: '0.08em'
-              }}>Hackathon Feature</span>
+              }}> Live Prevention Feature</span>
             </div>
             <p style={{ color: '#94a3b8', fontSize: '0.8rem', lineHeight: 1.5 }}>
               Real-time URL threat checking directly in Chrome / Edge — click to view installation guide.

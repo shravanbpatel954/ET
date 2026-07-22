@@ -83,7 +83,7 @@ export default function ScamIntelligence() {
                    <Area key={category} type="monotone" dataKey={category} stackId="1" stroke={['#3b82f6', '#f59e0b', '#ef4444'][index]} fill={['#3b82f6', '#f59e0b', '#ef4444'][index]} fillOpacity={0.6} name={category} />
                  ))}
                </AreaChart>
-             </ResponsiveContainer> : <div className="h-full flex items-center justify-center text-slate-500 text-sm">No evolution timeline yet. Analyze content or run market sync.</div>}
+             </ResponsiveContainer> : <div className="h-full flex items-center justify-center text-slate-500 text-sm"><RefreshCw size={14} className="animate-spin mr-2" /> Connecting to server, fetching evolution timeline...</div>}
           </div>
         </motion.div>
 
@@ -115,7 +115,11 @@ export default function ScamIntelligence() {
                    ))}
                    {intel.recent_variants.length === 0 && (
                      <tr className="bg-slate-800/20">
-                       <td className="px-4 py-6 text-slate-500 text-center" colSpan="5">No fingerprints stored yet.</td>
+                       <td className="px-4 py-6 text-slate-500 text-center" colSpan="5">
+                         <div className="flex items-center justify-center gap-2">
+                           <RefreshCw size={14} className="animate-spin" /> Connecting to server, fetching fingerprints...
+                         </div>
+                       </td>
                      </tr>
                    )}
                 </tbody>

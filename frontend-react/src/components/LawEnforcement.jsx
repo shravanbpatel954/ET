@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Users, AlertOctagon } from 'lucide-react';
+import { MapPin, Users, AlertOctagon, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { threatAPI } from '../services/api';
 
@@ -48,7 +48,9 @@ export default function LawEnforcement() {
                 </li>
               ))}
               {data.top_authorities.length === 0 && (
-                <li className="text-sm text-slate-500">No authority impersonation records yet.</li>
+                <li className="text-sm text-slate-500 flex items-center gap-2">
+                  <RefreshCw size={14} className="animate-spin" /> Connecting to server, fetching authorities...
+                </li>
               )}
            </ul>
         </motion.div>
@@ -66,7 +68,7 @@ export default function LawEnforcement() {
                  <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: 'rgba(15,23,42,0.9)', border: 'none' }} />
                  <Bar dataKey="cases" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={20} />
                </BarChart>
-             </ResponsiveContainer> : <div className="h-full flex items-center justify-center text-slate-500 text-sm">No hotspot records yet.</div>}
+             </ResponsiveContainer> : <div className="h-full flex items-center justify-center text-slate-500 text-sm"><RefreshCw size={14} className="animate-spin mr-2" /> Connecting to server, fetching hotspots...</div>}
            </div>
         </motion.div>
       </div>

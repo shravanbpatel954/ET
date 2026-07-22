@@ -70,7 +70,7 @@ export default function Dashboard({ onOpenExtension }) {
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" style={{ display: 'inline-block' }} />
             National Threat Matrix • Live
           </div>
-          <h1 className="page-title">Intelligence Command Center</h1>
+          <h1 className="page-title">AI-Powered Digital Safety Platform</h1>
           <p className="page-copy">Real-time scam detection, currency verification, and voice authentication — all in one platform.</p>
         </div>
       </div>

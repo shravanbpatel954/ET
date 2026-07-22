@@ -1,5 +1,5 @@
 // SentinelAI Chrome Extension - Popup Logic
-const API_BASE_URL = "http://localhost:8000/api/v1";
+const API_BASE_URL = "https://etbackend-hrf2.onrender.comapi/v1";
 
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
